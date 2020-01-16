@@ -1,138 +1,107 @@
-import 'dart:convert';
+import "package:flutter/material.dart";
+import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:flutter_todo/widgets/logo.widget.dart';
 
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'models/item.dart';
+import 'widgets/input.widget.dart';
 
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: "Alccol ou Gasolina",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepPurple,
       ),
       home: HomePage(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  var items = new List<Item>();
+class HomePage extends StatelessWidget {
+  var _gasCtrl = new MoneyMaskedTextController();
+  var _accCtrl = new MoneyMaskedTextController();
 
-  HomePage() {
-    items = [];
-    // items.add(Item(title: "Item 1", done: false));
-    // items.add(Item(title: "Item 2", done: true));
-    // items.add(Item(title: "Item 3", done: false));
-    // items.add(Item(title: "Item 4", done: true));
-  }
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  var newTaskCtrl = TextEditingController();
-
-  void add() {
-    if (newTaskCtrl.text.isEmpty) return;
-
-    setState(() {
-      widget.items.add(Item(
-        title: newTaskCtrl.text,
-        done: false,
-      ));
-      newTaskCtrl.text = "";
-    });
-    save();
-  }
-
-  void remove(int index) {
-    setState(() {
-      widget.items.removeAt(index);
-    });
-    save();
-  }
-
-  Future load() async {
-    var prefs = await SharedPreferences.getInstance();
-    var data = prefs.getString('data');
-
-    if (data != null) {
-      Iterable decoded = jsonDecode(data);
-
-      List<Item> result = decoded.map((x) => Item.fromJson(x)).toList();
-
-      setState(() {
-        widget.items = result;
-      });
-    }
-  }
-
-  save() async {
-    var prefs = await SharedPreferences.getInstance();
-    await prefs.setString('data', jsonEncode(widget.items));
-  }
-
-  _HomePageState() {
-    load();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: TextFormField(
-          controller: newTaskCtrl,
-          keyboardType: TextInputType.text,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18.0,
+      backgroundColor: Theme.of(context).primaryColor,
+      body: ListView(children: [
+        Logo(),
+        Container(
+          margin: EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(25),
           ),
-          decoration: InputDecoration(
-            labelText: 'Nova Tarefa',
-            labelStyle: TextStyle(
-              color: Colors.white,
-            ),
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: 50,
+              ),
+              Text(
+                "Compensa utilizar álcool",
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 40,
+                  fontFamily: "Big Shoulders Display",
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                margin: EdgeInsets.all(30),
+                height: 60,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(60),
+                ),
+                child: FlatButton(
+                  child: Text(
+                    "CALCULAR NOVAMENTE",
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 25,
+                      fontFamily: "Big Shoulders Display",
+                    ),
+                  ),
+                  onPressed: () {},
+                ),
+              )
+            ],
           ),
         ),
-      ),
-      body: ListView.builder(
-        itemCount: widget.items.length,
-        itemBuilder: (BuildContext context, int index) {
-          final item = widget.items[index];
-
-          return Dismissible(
-            child: CheckboxListTile(
-              title: Text(item.title),
-              value: item.done,
-              onChanged: (value) {
-                setState(() {
-                  item.done = value;
-                });
-                save();
-              },
+        Input(
+          ctrl: _gasCtrl,
+          label: 'Gasolina',
+        ),
+        Input(
+          ctrl: _accCtrl,
+          label: 'Álcool',
+        ),
+        Container(
+          margin: EdgeInsets.all(30),
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: FlatButton(
+            child: Text(
+              "CALCULAR",
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 25,
+                fontFamily: "Big Shoulders Display",
+              ),
             ),
-            key: Key(item.title),
-            background: Container(
-              color: Colors.red.withOpacity(0.2),
-            ),
-            onDismissed: (direction) {
-              remove(index);
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        backgroundColor: Colors.pink,
-        onPressed: add,
-      ),
+            onPressed: () {},
+          ),
+        )
+      ]),
     );
   }
 }
